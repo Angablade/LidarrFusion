@@ -29,7 +29,7 @@ Public Class Form1
         icon2.Image = My.Resources.search_icon_sign_symbol_design_free_png
         icon2.SizeMode = PictureBoxSizeMode.StretchImage
         icon2.Dock = DockStyle.Right
-        icon2.Width = 22
+        icon2.Width = 18
         icon2.BackColor = Color.Transparent
         icon2.Margin = New Padding(0, 10, icon2.Width, 10)
         ToolStripTextBox1.Control.Controls.Add(icon2)
@@ -60,6 +60,9 @@ Public Class Form1
                 DownloadLinkToolStripMenuItem_Click(Me, Nothing)
             End If
         End If
+
+        Task.Delay(2000)
+
         FfmpegexeToolStripMenuItem_Click(Me, Nothing)
         FfprobeexeToolStripMenuItem_Click(Me, Nothing)
         FfplayexeToolStripMenuItem_Click(Me, Nothing)
@@ -72,11 +75,21 @@ Public Class Form1
                 DownloadHereToolStripMenuItem_Click(Me, Nothing)
             End If
         End If
+
+        Task.Delay(2000)
+
         YtdlpexeToolStripMenuItem_Click(Me, Nothing)
 
         x = MsgBox("Would you like to add Youtube search append text?", MsgBoxStyle.YesNo)
         If x = MsgBoxResult.Yes Then
             PrependSearchTextToolStripMenuItem_Click(Me, Nothing)
+        End If
+
+        x = MsgBox("Would you like LidarrFusion to skip files you have already downloaded?", vbYesNo)
+        If x = MsgBoxResult.Yes Then
+            SkipExistingFilesToolStripMenuItem.Checked = True
+            My.Settings.skipexist = SkipExistingFilesToolStripMenuItem.Checked
+            My.Settings.Save()
         End If
     End Sub
     Private Sub ExitToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExitToolStripMenuItem.Click
@@ -156,29 +169,19 @@ Public Class Form1
 
     Private Sub DownloadHereToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DownloadHereToolStripMenuItem.Click
         Try
-            ' URL of the webpage to download
             Dim webpageUrl As String = "https://github.com/yt-dlp/yt-dlp/releases"
-
-            ' Download the webpage source code
             Dim webpageSource As String = webClient.DownloadString(webpageUrl)
-
-            ' Split the source code on char 34 (double quotes)
             Dim sourceParts As String() = webpageSource.Split(ChrW(34))
-
-            ' Loop through the parts to find the desired link
             Dim downloadLink As String = Nothing
             For Each str As String In sourceParts
                 If str.Contains("/yt-dlp/yt-dlp/releases/download/") AndAlso str.Contains("/yt-dlp.exe") Then
-                    ' Combine the parts to form the full download link
                     downloadLink = $"https://github.com{str}"
                     ToolStripStatusLabel1.Text = "yt-dlp.exe found!"
                     Exit For
                 End If
             Next
 
-            ' Check if a valid download link is found
             If Not String.IsNullOrEmpty(downloadLink) Then
-                ' Download the file to the root path of the application
                 Dim downloadPath As String = Path.Combine(Application.StartupPath, "yt-dlp.exe")
                 AddHandler webClient.DownloadProgressChanged, AddressOf WebClientDownloadProgressChanged
                 webClient.DownloadFile(New Uri(downloadLink), downloadPath)
@@ -220,57 +223,33 @@ Public Class Form1
 
         End If
     End Sub
-    Private Function IsValidUrl(url As String) As Boolean
-        ' Use a regular expression to validate the URL format
-        Dim urlPattern As String = "^(http|https)://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?$"
-        Dim regex As New Regex(urlPattern, RegexOptions.Compiled Or RegexOptions.IgnoreCase)
-        Return regex.IsMatch(url)
-    End Function
     Private Function FindAndUseFile(filename As String) As String
-        ' Check if the file exists in the application directory
         Dim appPath As String = Application.StartupPath
-
         Dim filePath As String = Path.Combine(appPath, filename)
-
         If System.IO.File.Exists(filePath) Then
-            ' File found in the application directory
             Dim useExistingFile As DialogResult = MessageBox.Show($"Found '{filename}' in the application directory. Do you want to use this version?", "File Found", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-
             If useExistingFile = DialogResult.Yes Then
-                ' User chose to use the existing file
                 ToolStripStatusLabel1.Text = $"Using existing file: {filePath}"
-
                 Return filePath
             Else
-                ' User chose not to use the existing file, open OpenFileDialog
                 OpenFileDialog1.FileName = filename
                 OpenFileDialog1.InitialDirectory = appPath
-
                 If OpenFileDialog1.ShowDialog() = DialogResult.OK Then
-                    ' User selected a file using OpenFileDialog
                     filePath = OpenFileDialog1.FileName
                     ToolStripStatusLabel1.Text = $"Selected file: {filePath}"
-
-                    ' Store the file path in My.Settings
                     Return filePath
                 Else
-                    ' User canceled OpenFileDialog, handle as needed
                     ToolStripStatusLabel1.Text = "Operation canceled by the user."
                 End If
             End If
         Else
-            ' File not found in the application directory, open OpenFileDialog
             OpenFileDialog1.FileName = filename
             OpenFileDialog1.InitialDirectory = appPath
-
             If OpenFileDialog1.ShowDialog() = DialogResult.OK Then
-                ' User selected a file using OpenFileDialog
                 filePath = OpenFileDialog1.FileName
                 ToolStripStatusLabel1.Text = $"Selected file: {filePath}"
-
                 Return filePath
             Else
-                ' User canceled OpenFileDialog, handle as needed
                 ToolStripStatusLabel1.Text = "Operation canceled by the user."
             End If
         End If
@@ -294,27 +273,20 @@ Public Class Form1
             BackgroundWorker1.RunWorkerAsync()
         End If
     End Sub
-
-
     Private Sub PrependSearchTextToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PrependSearchTextToolStripMenuItem.Click
         Dim userInput As String = InputBox("Enter youtube search append:", "append text")
         My.Settings.ytpp = userInput
         My.Settings.Save()
     End Sub
-
     Public Shared Function SanitizePath(Location As String) As String
         Dim invalidChars As Char() = Path.GetInvalidFileNameChars()
         Dim sanitizedPath As String = New String(Location _
         .Where(Function(c) Not invalidChars.Contains(c)) _
         .ToArray())
-
         Return sanitizedPath.Replace("<", "").Replace(">", "").Replace("""", "")
     End Function
     Public Function IsWindowsSafeFilePath(filePath As String) As Boolean
-        ' Get invalid path characters
         Dim invalidPathChars As Char() = Path.GetInvalidPathChars()
-
-        ' Check if any invalid characters are present in the file path
         Return filePath.IndexOfAny(invalidPathChars) = -1
     End Function
     Private Sub BackgroundWorker1_DoWork(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundWorker1.DoWork
@@ -324,8 +296,6 @@ Public Class Form1
             webClient.Headers.Add("X-Api-Key", My.Settings.LidarrAPIKey)
             Dim response As String = webClient.DownloadString(Url)
             Dim data As JObject = Newtonsoft.Json.JsonConvert.DeserializeObject(response)
-
-            ' Check if 'records' property exists
             If data("records") IsNot Nothing Then
                 For Each record As JObject In data("records")
                     Try
@@ -350,23 +320,18 @@ Public Class Form1
                                     q.SubItems.Add(tracklocation)
                                     If IsWindowsSafeFilePath(tracklocation) Then ListView1.Items.Add(q)
                                 Catch ex As Exception
-                                    ' Handle individual track processing exception
                                 End Try
                             Next
                         End If
-
                         System.Threading.Thread.Sleep(1500)
                     Catch ex As Exception
-                        ' Handle individual record processing exception
                     End Try
                     If cancelbgw1 = True Then Exit For
                 Next
             Else
-                ' Handle the case where 'records' property is not found in the response
                 ToolStripStatusLabel1.Text = "The 'records' property was not found in the response."
             End If
         Catch ex As Exception
-            ' Handle the main exception
         End Try
 
         ToolStripButton1.Enabled = True
@@ -389,96 +354,64 @@ Public Class Form1
     End Sub
 
     Private Sub BackgroundWorker2_DoWork(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundWorker2.DoWork
+
+        Dim itmgrp As New ListView.ListViewItemCollection(ListView1)
+
         If ListView1.SelectedItems.Count > 1 Then
             For Each itm As ListViewItem In ListView1.SelectedItems
-                Try
-                    Dim artist As String = itm.Text
-                    Dim album As String = itm.SubItems.Item(1).Text
-                    Dim track As String = itm.SubItems.Item(2).Text
-                    Dim id As String = itm.SubItems.Item(3).Text
-                    Dim youtubelink As String = itm.SubItems.Item(4).Text
-                    Dim tracklocation As String = itm.SubItems.Item(5).Text
-
-                    If My.Computer.FileSystem.FileExists(tracklocation) = True Then
-                        If SkipExistingFilesToolStripMenuItem.Checked = True Then Exit Try
-                    End If
-
-                    Dim rootpath As String = My.Settings.rootpath
-
-                    If Not Directory.Exists(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album))) Then
-                        Directory.CreateDirectory(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album)))
-                    End If
-
-                    itm.BackColor = Color.Yellow
-
-                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
-                    Dim processPath As String = My.Settings.ytdlp
-                    Dim processArguments As String = ChrW(34) & youtubelink & ChrW(34) & " -x --audio-format " & ChrW(34) & "mp3" & ChrW(34) & " --match-filter " & ChrW(34) & "is_live != true & was_live != true & duration < 3600" & ChrW(34) & " --download-archive " & ChrW(34) & "archive.txt" & ChrW(34) & " --break-on-existing --output " & ChrW(34) & tracklocation & ChrW(34)
-
-                    'MsgBox(processArguments)
-
-                    Dim process As New Process()
-                    process.StartInfo.FileName = processPath
-                    process.StartInfo.Arguments = processArguments
-                    process.StartInfo.UseShellExecute = False
-                    process.StartInfo.RedirectStandardOutput = True
-                    process.StartInfo.RedirectStandardError = True
-
-                    process.Start()
-                    Dim standardOutput As String = process.StandardOutput.ReadToEnd()
-
-                    Console.WriteLine(standardOutput.Trim())
-                    itm.BackColor = Color.Green
-                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
-                    process.WaitForExit()
-                Catch ex As Exception
-                    itm.BackColor = Color.Red
-                End Try
-                If cancelbgw2 = True Then Exit For
+                itmgrp.Add(itm)
             Next
         Else
             For Each itm As ListViewItem In ListView1.Items
-                Try
-                    Dim artist As String = itm.Text
-                    Dim album As String = itm.SubItems.Item(1).Text
-                    Dim track As String = itm.SubItems.Item(2).Text
-                    Dim id As String = itm.SubItems.Item(3).Text
-                    Dim youtubelink As String = itm.SubItems.Item(4).Text
-                    Dim tracklocation As String = itm.SubItems.Item(5).Text
-                    Dim rootpath As String = My.Settings.rootpath
-
-                    If Not Directory.Exists(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album))) Then
-                        Directory.CreateDirectory(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album)))
-                    End If
-
-                    itm.BackColor = Color.Yellow
-
-                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
-                    Dim processPath As String = My.Settings.ytdlp
-                    Dim processArguments As String = ChrW(34) & youtubelink & ChrW(34) & " -x --audio-format " & ChrW(34) & "mp3" & ChrW(34) & " --match-filter " & ChrW(34) & "is_live != true & was_live != true & duration < 3600" & ChrW(34) & " --download-archive " & ChrW(34) & "archive.txt" & ChrW(34) & " --break-on-existing --output " & ChrW(34) & tracklocation & ChrW(34)
-
-                    'MsgBox(processArguments)
-
-                    Dim process As New Process()
-                    process.StartInfo.FileName = processPath
-                    process.StartInfo.Arguments = processArguments
-                    process.StartInfo.UseShellExecute = False
-                    process.StartInfo.RedirectStandardOutput = True
-                    process.StartInfo.RedirectStandardError = True
-
-                    process.Start()
-                    Dim standardOutput As String = process.StandardOutput.ReadToEnd()
-
-                    Console.WriteLine(standardOutput.Trim())
-                    itm.BackColor = Color.Green
-                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
-                    process.WaitForExit()
-                Catch ex As Exception
-                    itm.BackColor = Color.Red
-                End Try
-                If cancelbgw2 = True Then Exit For
+                itmgrp.Add(itm)
             Next
         End If
+
+        For Each itm As ListViewItem In itmgrp
+            Try
+                Dim artist As String = itm.Text
+                Dim album As String = itm.SubItems.Item(1).Text
+                Dim track As String = itm.SubItems.Item(2).Text
+                Dim id As String = itm.SubItems.Item(3).Text
+                Dim youtubelink As String = itm.SubItems.Item(4).Text
+                Dim tracklocation As String = itm.SubItems.Item(5).Text
+
+                If My.Computer.FileSystem.FileExists(tracklocation) = True Then
+                    If SkipExistingFilesToolStripMenuItem.Checked = True Then Exit Try
+                End If
+
+                Dim rootpath As String = My.Settings.rootpath
+
+                If Not Directory.Exists(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album))) Then
+                    Directory.CreateDirectory(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album)))
+                End If
+
+                itm.BackColor = Color.Yellow
+
+                ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
+                Dim processPath As String = My.Settings.ytdlp
+                Dim processArguments As String = ChrW(34) & youtubelink & ChrW(34) & " -x --audio-format " & ChrW(34) & "mp3" & ChrW(34) & " --match-filter " & ChrW(34) & "is_live != true & was_live != true & duration < 3600" & ChrW(34) & " --download-archive " & ChrW(34) & "archive.txt" & ChrW(34) & " --break-on-existing --output " & ChrW(34) & tracklocation & ChrW(34)
+
+                Dim process As New Process()
+                process.StartInfo.FileName = processPath
+                process.StartInfo.Arguments = processArguments
+                process.StartInfo.UseShellExecute = False
+                process.StartInfo.RedirectStandardOutput = True
+                process.StartInfo.RedirectStandardError = True
+
+                process.Start()
+                Dim standardOutput As String = process.StandardOutput.ReadToEnd()
+
+                Console.WriteLine(standardOutput.Trim())
+                itm.BackColor = Color.Green
+                ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
+                process.WaitForExit()
+            Catch ex As Exception
+                itm.BackColor = Color.Red
+            End Try
+            If cancelbgw2 = True Then Exit For
+        Next
+
         ToolStripButton1.Enabled = True
         ToolStripButton2.Enabled = True
         ToolStripButton3.Enabled = True
@@ -513,47 +446,38 @@ Public Class Form1
     End Sub
 
     Private Sub BackgroundWorker3_DoWork(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundWorker3.DoWork
+        Dim itmgrp As New ListView.ListViewItemCollection(ListView1)
+
         If ListView1.SelectedItems.Count > 1 Then
             For Each itm As ListViewItem In ListView1.SelectedItems
-                Try
-                    Dim artist As String = itm.Text
-                    Dim album As String = itm.SubItems.Item(1).Text
-                    Dim track As String = itm.SubItems.Item(2).Text
-                    Dim id As String = itm.SubItems.Item(3).Text
-                    Dim youtubelink As String = itm.SubItems.Item(4).Text
-                    Dim tracklocation As String = itm.SubItems.Item(5).Text
-                    Dim rootpath As String = My.Settings.rootpath
-                    itm.BackColor = Color.Yellow
-                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
-                    WriteID3v3Tags(tracklocation, artist, album, track)
-                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
-                    itm.BackColor = Color.Green
-                Catch ex As Exception
-                    itm.BackColor = Color.Red
-                End Try
-                If cancelbgw3 = True Then Exit For
+                itmgrp.Add(itm)
             Next
         Else
             For Each itm As ListViewItem In ListView1.Items
-                Try
-                    Dim artist As String = itm.Text
-                    Dim album As String = itm.SubItems.Item(1).Text
-                    Dim track As String = itm.SubItems.Item(2).Text
-                    Dim id As String = itm.SubItems.Item(3).Text
-                    Dim youtubelink As String = itm.SubItems.Item(4).Text
-                    Dim tracklocation As String = itm.SubItems.Item(5).Text
-                    Dim rootpath As String = My.Settings.rootpath
-                    itm.BackColor = Color.Yellow
-                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
-                    WriteID3v3Tags(tracklocation, artist, album, track)
-                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
-                    itm.BackColor = Color.Green
-                Catch ex As Exception
-                    itm.BackColor = Color.Red
-                End Try
-                If cancelbgw3 = True Then Exit For
+                itmgrp.Add(itm)
             Next
         End If
+
+        For Each itm As ListViewItem In itmgrp
+            Try
+                Dim artist As String = itm.Text
+                Dim album As String = itm.SubItems.Item(1).Text
+                Dim track As String = itm.SubItems.Item(2).Text
+                Dim id As String = itm.SubItems.Item(3).Text
+                Dim youtubelink As String = itm.SubItems.Item(4).Text
+                Dim tracklocation As String = itm.SubItems.Item(5).Text
+                Dim rootpath As String = My.Settings.rootpath
+                itm.BackColor = Color.Yellow
+                ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
+                WriteID3v3Tags(tracklocation, artist, album, track)
+                ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
+                itm.BackColor = Color.Green
+            Catch ex As Exception
+                itm.BackColor = Color.Red
+            End Try
+            If cancelbgw3 = True Then Exit For
+        Next
+
         ToolStripButton1.Enabled = True
         ToolStripButton2.Enabled = True
         ToolStripButton3.Enabled = True
@@ -634,17 +558,14 @@ Public Class Form1
     End Sub
     Public Sub PerformSearch(listView As ListView, searchTerm As String)
         If listView.Tag Is Nothing Then
-            ' Save the original items in the Tag property
             listView.Tag = New List(Of ListViewItem)(listView.Items.Cast(Of ListViewItem)())
         End If
 
         Dim originalItems As List(Of ListViewItem) = DirectCast(listView.Tag, List(Of ListViewItem))
 
         If String.IsNullOrEmpty(searchTerm) Then
-            ' Restore original items when search term is empty
             RestoreOriginalItems(listView, originalItems)
         Else
-            ' Hide items that do not contain the search term
             HideItemsNotContainingTerm(listView, originalItems, searchTerm)
         End If
     End Sub
@@ -675,6 +596,10 @@ Public Class Form1
         My.Settings.Save()
     End Sub
 
+    Private Sub AboutToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AboutToolStripMenuItem.Click
+        AboutBox1.ShowDialog()
+    End Sub
+
     Private Sub ToolStripTextBox1_Click(sender As Object, e As EventArgs) Handles ToolStripTextBox1.Click
 
     End Sub
@@ -682,8 +607,6 @@ End Class
 Public Class MusicBrainzHelper
     Public Shared Function GetTrackList(artist As String, album As String) As String()
         Try
-
-
             Dim apiUrl As String = "https://musicbrainz.org/ws/2/"
             Dim formattedArtist As String = WebUtility.UrlEncode(artist)
             Dim formattedAlbum As String = WebUtility.UrlEncode(album)
@@ -691,7 +614,7 @@ Public Class MusicBrainzHelper
 
             Dim request As HttpWebRequest = CType(WebRequest.Create(url), HttpWebRequest)
             request.Method = "GET"
-            request.UserAgent = "Listenarr V1"
+            request.UserAgent = "LidarrFusion"
 
             Using response As HttpWebResponse = CType(request.GetResponse(), HttpWebResponse)
                 Using stream As Stream = response.GetResponseStream()
@@ -708,7 +631,7 @@ Public Class MusicBrainzHelper
 
                             request = CType(WebRequest.Create(tracklistUrl), HttpWebRequest)
                             request.Method = "GET"
-                            request.UserAgent = "Listenarr V1"
+                            request.UserAgent = "LidarrFusion"
 
                             Using tracklistResponse As HttpWebResponse = CType(request.GetResponse(), HttpWebResponse)
                                 Using tracklistStream As Stream = tracklistResponse.GetResponseStream()

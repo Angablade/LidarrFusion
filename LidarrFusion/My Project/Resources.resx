@@ -118,11 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="78911-200" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\78911-200.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="apps.33412.13870881915102457.c35d48f2-3399-41e9-aff3-45a4e8871203" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\apps.33412.13870881915102457.c35d48f2-3399-41e9-aff3-45a4e8871203.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="search-icon-sign-symbol-design-free-png" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\search-icon-sign-symbol-design-free-png.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="download-2-xxl" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\download-2-xxl.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -130,20 +130,23 @@
   <data name="6002fa9051c2ec00048c6c7a" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\6002fa9051c2ec00048c6c7a.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="28475832" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\28475832.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="b6a8d716-9c7b-40ec-bc44-6422d8b741a0" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\b6a8d716-9c7b-40ec-bc44-6422d8b741a0.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="1017443" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\1017443.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="477154" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\477154.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="apps.55042.2333d5c4-cd0f-45a1-bdb7-57a4b30a8cf9.4a0eb3da-0ea9-4903-acc8-5ba38654775e" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\apps.55042.2333d5c4-cd0f-45a1-bdb7-57a4b30a8cf9.4a0eb3da-0ea9-4903-acc8-5ba38654775e.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="search-icon-sign-symbol-design-free-png" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\search-icon-sign-symbol-design-free-png.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="28475832" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\28475832.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="image" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\image.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="4524213" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\4524213.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="5201246" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\5201246.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -157,8 +160,8 @@
   <data name="ffmpeg-icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ffmpeg-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="b6a8d716-9c7b-40ec-bc44-6422d8b741a0" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\b6a8d716-9c7b-40ec-bc44-6422d8b741a0.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="4524213" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\4524213.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="download-2-xxl1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\download-2-xxl1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -169,10 +172,10 @@
   <data name="images" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\images.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="1017443" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\1017443.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="78911-200" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\78911-200.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="477154" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\477154.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="lidarrfusion" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\lidarrfusion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

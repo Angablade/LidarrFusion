@@ -48,6 +48,7 @@ Partial Class Form1
         DownloadHereToolStripMenuItem = New ToolStripMenuItem()
         ToolStripMenuItem3 = New ToolStripSeparator()
         RunSetupWizardToolStripMenuItem = New ToolStripMenuItem()
+        AboutToolStripMenuItem = New ToolStripMenuItem()
         ExitToolStripMenuItem = New ToolStripMenuItem()
         ToolStripButton1 = New ToolStripButton()
         ToolStripButton2 = New ToolStripButton()
@@ -66,7 +67,6 @@ Partial Class Form1
         BackgroundWorker1 = New ComponentModel.BackgroundWorker()
         BackgroundWorker2 = New ComponentModel.BackgroundWorker()
         BackgroundWorker3 = New ComponentModel.BackgroundWorker()
-        AboutToolStripMenuItem = New ToolStripMenuItem()
         StatusStrip1.SuspendLayout()
         ToolStrip1.SuspendLayout()
         SuspendLayout()
@@ -250,6 +250,13 @@ Partial Class Form1
         RunSetupWizardToolStripMenuItem.Text = "Run Setup Wizard"
         RunSetupWizardToolStripMenuItem.Visible = False
         ' 
+        ' AboutToolStripMenuItem
+        ' 
+        AboutToolStripMenuItem.Image = My.Resources.Resources._78911_200
+        AboutToolStripMenuItem.Name = "AboutToolStripMenuItem"
+        AboutToolStripMenuItem.Size = New Size(180, 22)
+        AboutToolStripMenuItem.Text = "About"
+        ' 
         ' ExitToolStripMenuItem
         ' 
         ExitToolStripMenuItem.Image = My.Resources.Resources._7b82479ee939a7b4ad45e26cbab28c02
@@ -302,14 +309,14 @@ Partial Class Form1
         ' 
         ' ListView1
         ' 
-        ListView1.BorderStyle = BorderStyle.FixedSingle
+        ListView1.BorderStyle = BorderStyle.None
         ListView1.Columns.AddRange(New ColumnHeader() {ColumnHeader3, ColumnHeader5, ColumnHeader6, ColumnHeader7, ColumnHeader8, ColumnHeader9})
         ListView1.Dock = DockStyle.Fill
         ListView1.FullRowSelect = True
         ListView1.GridLines = True
         ListView1.Location = New Point(0, 25)
-        ListView1.MultiSelect = False
         ListView1.Name = "ListView1"
+        ListView1.ShowGroups = False
         ListView1.Size = New Size(1212, 555)
         ListView1.TabIndex = 2
         ListView1.UseCompatibleStateImageBehavior = False
@@ -362,13 +369,6 @@ Partial Class Form1
         ' 
         BackgroundWorker3.WorkerReportsProgress = True
         BackgroundWorker3.WorkerSupportsCancellation = True
-        ' 
-        ' AboutToolStripMenuItem
-        ' 
-        AboutToolStripMenuItem.Image = My.Resources.Resources._78911_200
-        AboutToolStripMenuItem.Name = "AboutToolStripMenuItem"
-        AboutToolStripMenuItem.Size = New Size(180, 22)
-        AboutToolStripMenuItem.Text = "About"
         ' 
         ' Form1
         ' 

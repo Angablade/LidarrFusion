@@ -7,6 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <MyType>WindowsForms</MyType>
     <ApplicationIcon>lidarrfusion.ico</ApplicationIcon>
+    <Copyright>Angablade</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
