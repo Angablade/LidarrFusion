@@ -3,7 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "LidarrFusion", "LidarrFusion\LidarrFusion.vbproj", "{BE0D6D53-A05D-41C0-BAFC-D97C1DF2EA75}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "LidarrFusion", "LidarrFusion\LidarrFusion.vbproj", "{BE0D6D53-A05D-41C0-BAFC-D97C1DF2EA75}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{72016765-66EB-4AC0-9A41-D7F50C8B3795}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{DC3E8565-7747-4FE9-8FDC-AAD6F772E342}"
+	ProjectSection(SolutionItems) = preProject
+		build.yml = build.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +25,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DC3E8565-7747-4FE9-8FDC-AAD6F772E342} = {72016765-66EB-4AC0-9A41-D7F50C8B3795}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EE576F9C-D97E-4D5C-A33D-443B4EB60921}
