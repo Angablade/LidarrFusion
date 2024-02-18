@@ -12,6 +12,7 @@ Imports System.ComponentModel
 
 Public Class Form1
     Private WithEvents webClient As New WebClient()
+    Private WithEvents contextMenuListView As New ContextMenuStrip()
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         If My.Settings.firstrun = True Then
             My.Settings.firstrun = False
@@ -33,6 +34,13 @@ Public Class Form1
         icon2.BackColor = Color.Transparent
         icon2.Margin = New Padding(0, 10, icon2.Width, 10)
         ToolStripTextBox1.Control.Controls.Add(icon2)
+
+        ListView1.ContextMenuStrip = contextMenuListView
+        contextMenuListView.Items.Add("Download", Nothing, AddressOf DownloadMenuItem_Click)
+        contextMenuListView.Items.Add("Write Tags", Nothing, AddressOf WriteTagsMenuItem_Click)
+        contextMenuListView.Items.Add("Edit Item", Nothing, AddressOf EditTagsMenuItem_Click)
+        contextMenuListView.Items.Add("Open URL", Nothing, AddressOf OpenUrlMenuItem_Click)
+        contextMenuListView.Items.Add("Remove", Nothing, AddressOf RemoveMenuItem_Click)
     End Sub
     Private Sub setupwizard()
         Dim x As MsgBoxResult
@@ -274,7 +282,7 @@ Public Class Form1
         End If
     End Sub
     Private Sub PrependSearchTextToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PrependSearchTextToolStripMenuItem.Click
-        Dim userInput As String = InputBox("Enter youtube search append:", "append text")
+        Dim userInput As String = InputBox("Enter youtube search append:", "append text", My.Settings.ytpp)
         My.Settings.ytpp = userInput
         My.Settings.Save()
     End Sub
@@ -354,63 +362,97 @@ Public Class Form1
     End Sub
 
     Private Sub BackgroundWorker2_DoWork(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundWorker2.DoWork
-
-        Dim itmgrp As New ListView.ListViewItemCollection(ListView1)
-
         If ListView1.SelectedItems.Count > 1 Then
             For Each itm As ListViewItem In ListView1.SelectedItems
-                itmgrp.Add(itm)
+                Try
+                    Dim artist As String = itm.Text
+                    Dim album As String = itm.SubItems.Item(1).Text
+                    Dim track As String = itm.SubItems.Item(2).Text
+                    Dim id As String = itm.SubItems.Item(3).Text
+                    Dim youtubelink As String = itm.SubItems.Item(4).Text
+                    Dim tracklocation As String = itm.SubItems.Item(5).Text
+
+                    If My.Computer.FileSystem.FileExists(tracklocation) = True Then
+                        If SkipExistingFilesToolStripMenuItem.Checked = True Then Exit Try
+                    End If
+
+                    Dim rootpath As String = My.Settings.rootpath
+
+                    If Not Directory.Exists(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album))) Then
+                        Directory.CreateDirectory(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album)))
+                    End If
+
+                    itm.BackColor = Color.Yellow
+
+                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
+                    Dim processPath As String = My.Settings.ytdlp
+                    Dim processArguments As String = ChrW(34) & youtubelink & ChrW(34) & " -x --audio-format " & ChrW(34) & "mp3" & ChrW(34) & " --match-filter " & ChrW(34) & "is_live != true & was_live != true & duration < 3600" & ChrW(34) & " --download-archive " & ChrW(34) & "archive.txt" & ChrW(34) & " --break-on-existing --output " & ChrW(34) & tracklocation & ChrW(34)
+
+                    Dim process As New Process()
+                    process.StartInfo.FileName = processPath
+                    process.StartInfo.Arguments = processArguments
+                    process.StartInfo.UseShellExecute = False
+                    process.StartInfo.RedirectStandardOutput = True
+                    process.StartInfo.RedirectStandardError = True
+
+                    process.Start()
+                    Dim standardOutput As String = process.StandardOutput.ReadToEnd()
+
+                    Console.WriteLine(standardOutput.Trim())
+                    itm.BackColor = Color.Green
+                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
+                    process.WaitForExit()
+                Catch ex As Exception
+                    itm.BackColor = Color.Red
+                End Try
+                If cancelbgw2 = True Then Exit For
             Next
         Else
             For Each itm As ListViewItem In ListView1.Items
-                itmgrp.Add(itm)
+                Try
+                    Dim artist As String = itm.Text
+                    Dim album As String = itm.SubItems.Item(1).Text
+                    Dim track As String = itm.SubItems.Item(2).Text
+                    Dim id As String = itm.SubItems.Item(3).Text
+                    Dim youtubelink As String = itm.SubItems.Item(4).Text
+                    Dim tracklocation As String = itm.SubItems.Item(5).Text
+
+                    If My.Computer.FileSystem.FileExists(tracklocation) = True Then
+                        If SkipExistingFilesToolStripMenuItem.Checked = True Then Exit Try
+                    End If
+
+                    Dim rootpath As String = My.Settings.rootpath
+
+                    If Not Directory.Exists(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album))) Then
+                        Directory.CreateDirectory(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album)))
+                    End If
+
+                    itm.BackColor = Color.Yellow
+
+                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
+                    Dim processPath As String = My.Settings.ytdlp
+                    Dim processArguments As String = ChrW(34) & youtubelink & ChrW(34) & " -x --audio-format " & ChrW(34) & "mp3" & ChrW(34) & " --match-filter " & ChrW(34) & "is_live != true & was_live != true & duration < 3600" & ChrW(34) & " --download-archive " & ChrW(34) & "archive.txt" & ChrW(34) & " --break-on-existing --output " & ChrW(34) & tracklocation & ChrW(34)
+
+                    Dim process As New Process()
+                    process.StartInfo.FileName = processPath
+                    process.StartInfo.Arguments = processArguments
+                    process.StartInfo.UseShellExecute = False
+                    process.StartInfo.RedirectStandardOutput = True
+                    process.StartInfo.RedirectStandardError = True
+
+                    process.Start()
+                    Dim standardOutput As String = process.StandardOutput.ReadToEnd()
+
+                    Console.WriteLine(standardOutput.Trim())
+                    itm.BackColor = Color.Green
+                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
+                    process.WaitForExit()
+                Catch ex As Exception
+                    itm.BackColor = Color.Red
+                End Try
+                If cancelbgw2 = True Then Exit For
             Next
         End If
-
-        For Each itm As ListViewItem In itmgrp
-            Try
-                Dim artist As String = itm.Text
-                Dim album As String = itm.SubItems.Item(1).Text
-                Dim track As String = itm.SubItems.Item(2).Text
-                Dim id As String = itm.SubItems.Item(3).Text
-                Dim youtubelink As String = itm.SubItems.Item(4).Text
-                Dim tracklocation As String = itm.SubItems.Item(5).Text
-
-                If My.Computer.FileSystem.FileExists(tracklocation) = True Then
-                    If SkipExistingFilesToolStripMenuItem.Checked = True Then Exit Try
-                End If
-
-                Dim rootpath As String = My.Settings.rootpath
-
-                If Not Directory.Exists(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album))) Then
-                    Directory.CreateDirectory(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album)))
-                End If
-
-                itm.BackColor = Color.Yellow
-
-                ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
-                Dim processPath As String = My.Settings.ytdlp
-                Dim processArguments As String = ChrW(34) & youtubelink & ChrW(34) & " -x --audio-format " & ChrW(34) & "mp3" & ChrW(34) & " --match-filter " & ChrW(34) & "is_live != true & was_live != true & duration < 3600" & ChrW(34) & " --download-archive " & ChrW(34) & "archive.txt" & ChrW(34) & " --break-on-existing --output " & ChrW(34) & tracklocation & ChrW(34)
-
-                Dim process As New Process()
-                process.StartInfo.FileName = processPath
-                process.StartInfo.Arguments = processArguments
-                process.StartInfo.UseShellExecute = False
-                process.StartInfo.RedirectStandardOutput = True
-                process.StartInfo.RedirectStandardError = True
-
-                process.Start()
-                Dim standardOutput As String = process.StandardOutput.ReadToEnd()
-
-                Console.WriteLine(standardOutput.Trim())
-                itm.BackColor = Color.Green
-                ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
-                process.WaitForExit()
-            Catch ex As Exception
-                itm.BackColor = Color.Red
-            End Try
-            If cancelbgw2 = True Then Exit For
-        Next
 
         ToolStripButton1.Enabled = True
         ToolStripButton2.Enabled = True
@@ -446,37 +488,48 @@ Public Class Form1
     End Sub
 
     Private Sub BackgroundWorker3_DoWork(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundWorker3.DoWork
-        Dim itmgrp As New ListView.ListViewItemCollection(ListView1)
 
         If ListView1.SelectedItems.Count > 1 Then
-            For Each itm As ListViewItem In ListView1.SelectedItems
-                itmgrp.Add(itm)
-            Next
+            Dim selectedItems As List(Of ListViewItem) = ListView1.SelectedItems.Cast(Of ListViewItem)().ToList()
+            Parallel.ForEach(selectedItems, Sub(itm)
+                                                Try
+                                                    Dim artist As String = itm.Text
+                                                    Dim album As String = itm.SubItems.Item(1).Text
+                                                    Dim track As String = itm.SubItems.Item(2).Text
+                                                    Dim id As String = itm.SubItems.Item(3).Text
+                                                    Dim youtubelink As String = itm.SubItems.Item(4).Text
+                                                    Dim tracklocation As String = itm.SubItems.Item(5).Text
+                                                    Dim rootpath As String = My.Settings.rootpath
+                                                    itm.BackColor = Color.Yellow
+                                                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
+                                                    WriteID3v3Tags(tracklocation, artist, album, track)
+                                                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
+                                                    itm.BackColor = Color.Green
+                                                Catch ex As Exception
+                                                    itm.BackColor = Color.Red
+                                                End Try
+                                            End Sub)
         Else
-            For Each itm As ListViewItem In ListView1.Items
-                itmgrp.Add(itm)
-            Next
+            Dim TItems As List(Of ListViewItem) = ListView1.Items.Cast(Of ListViewItem)().ToList()
+            Parallel.ForEach(TItems, Sub(itm)
+                                         Try
+                                             Dim artist As String = itm.Text
+                                             Dim album As String = itm.SubItems.Item(1).Text
+                                             Dim track As String = itm.SubItems.Item(2).Text
+                                             Dim id As String = itm.SubItems.Item(3).Text
+                                             Dim youtubelink As String = itm.SubItems.Item(4).Text
+                                             Dim tracklocation As String = itm.SubItems.Item(5).Text
+                                             Dim rootpath As String = My.Settings.rootpath
+                                             itm.BackColor = Color.Yellow
+                                             ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
+                                             WriteID3v3Tags(tracklocation, artist, album, track)
+                                             ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
+                                             itm.BackColor = Color.Green
+                                         Catch ex As Exception
+                                             itm.BackColor = Color.Red
+                                         End Try
+                                     End Sub)
         End If
-
-        For Each itm As ListViewItem In itmgrp
-            Try
-                Dim artist As String = itm.Text
-                Dim album As String = itm.SubItems.Item(1).Text
-                Dim track As String = itm.SubItems.Item(2).Text
-                Dim id As String = itm.SubItems.Item(3).Text
-                Dim youtubelink As String = itm.SubItems.Item(4).Text
-                Dim tracklocation As String = itm.SubItems.Item(5).Text
-                Dim rootpath As String = My.Settings.rootpath
-                itm.BackColor = Color.Yellow
-                ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
-                WriteID3v3Tags(tracklocation, artist, album, track)
-                ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
-                itm.BackColor = Color.Green
-            Catch ex As Exception
-                itm.BackColor = Color.Red
-            End Try
-            If cancelbgw3 = True Then Exit For
-        Next
 
         ToolStripButton1.Enabled = True
         ToolStripButton2.Enabled = True
@@ -485,76 +538,6 @@ Public Class Form1
 
     Private Sub BackgroundWorker1_ProgressChanged(sender As Object, e As ProgressChangedEventArgs) Handles BackgroundWorker1.ProgressChanged
         ToolStripStatusLabel1.Text = "Proccessing Data..."
-    End Sub
-    Private Sub ListView1_MouseDoubleClick(sender As Object, e As MouseEventArgs) Handles ListView1.MouseDoubleClick
-        If e.Button = MouseButtons.Left Then
-            Try
-                Dim itm As ListViewItem = ListView1.SelectedItems.Item(0)
-                Try
-
-                    Dim artist As String = itm.Text
-                    Dim album As String = itm.SubItems.Item(1).Text
-                    Dim track As String = itm.SubItems.Item(2).Text
-                    Dim id As String = itm.SubItems.Item(3).Text
-                    Dim youtubelink As String = itm.SubItems.Item(4).Text
-                    Dim tracklocation As String = itm.SubItems.Item(5).Text
-                    Dim rootpath As String = My.Settings.rootpath
-
-                    If Not Directory.Exists(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album))) Then
-                        Directory.CreateDirectory(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album)))
-                    End If
-
-                    itm.BackColor = Color.Yellow
-
-                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
-                    Dim processPath As String = My.Settings.ytdlp
-                    Dim processArguments As String = ChrW(34) & youtubelink & ChrW(34) & " -x --audio-format " & ChrW(34) & "mp3" & ChrW(34) & " --match-filter " & ChrW(34) & "is_live != true & was_live != true & duration < 3600" & ChrW(34) & " --download-archive " & ChrW(34) & "archive.txt" & ChrW(34) & " --break-on-existing --output " & ChrW(34) & tracklocation & ChrW(34)
-
-                    Dim process As New Process()
-                    process.StartInfo.FileName = processPath
-                    process.StartInfo.Arguments = processArguments
-                    process.StartInfo.UseShellExecute = False
-                    process.StartInfo.RedirectStandardOutput = True
-                    process.StartInfo.RedirectStandardError = True
-
-                    process.Start()
-                    Dim standardOutput As String = process.StandardOutput.ReadToEnd()
-
-                    Console.WriteLine(standardOutput.Trim())
-                    itm.BackColor = Color.Green
-                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
-                    process.WaitForExit()
-                Catch ex As Exception
-                    itm.BackColor = Color.Red
-                End Try
-            Catch ex As Exception
-
-            End Try
-        End If
-
-        If e.Button = MouseButtons.Right Then
-            Try
-                Dim itm As ListViewItem = ListView1.SelectedItems.Item(0)
-                Try
-                    Dim artist As String = itm.Text
-                    Dim album As String = itm.SubItems.Item(1).Text
-                    Dim track As String = itm.SubItems.Item(2).Text
-                    Dim id As String = itm.SubItems.Item(3).Text
-                    Dim youtubelink As String = itm.SubItems.Item(4).Text
-                    Dim tracklocation As String = itm.SubItems.Item(5).Text
-                    Dim rootpath As String = My.Settings.rootpath
-                    itm.BackColor = Color.Yellow
-                    ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
-                    WriteID3v3Tags(tracklocation, artist, album, track)
-                    ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
-                    itm.BackColor = Color.Green
-                Catch ex As Exception
-                    itm.BackColor = Color.Red
-                End Try
-            Catch ex As Exception
-
-            End Try
-        End If
     End Sub
     Public Sub PerformSearch(listView As ListView, searchTerm As String)
         If listView.Tag Is Nothing Then
@@ -602,6 +585,98 @@ Public Class Form1
 
     Private Sub ToolStripTextBox1_Click(sender As Object, e As EventArgs) Handles ToolStripTextBox1.Click
 
+    End Sub
+    Private Sub DownloadMenuItem_Click(sender As Object, e As EventArgs)
+        Try
+            Dim itm As ListViewItem = ListView1.SelectedItems.Item(0)
+            Try
+
+                Dim artist As String = itm.Text
+                Dim album As String = itm.SubItems.Item(1).Text
+                Dim track As String = itm.SubItems.Item(2).Text
+                Dim id As String = itm.SubItems.Item(3).Text
+                Dim youtubelink As String = itm.SubItems.Item(4).Text
+                Dim tracklocation As String = itm.SubItems.Item(5).Text
+                Dim rootpath As String = My.Settings.rootpath
+
+                If Not Directory.Exists(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album))) Then
+                    Directory.CreateDirectory(Path.Combine(rootpath, SanitizePath(artist), SanitizePath(album)))
+                End If
+
+                itm.BackColor = Color.Yellow
+
+                ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
+                Dim processPath As String = My.Settings.ytdlp
+                Dim processArguments As String = ChrW(34) & youtubelink & ChrW(34) & " -x --audio-format " & ChrW(34) & "mp3" & ChrW(34) & " --match-filter " & ChrW(34) & "is_live != true & was_live != true & duration < 3600" & ChrW(34) & " --download-archive " & ChrW(34) & "archive.txt" & ChrW(34) & " --break-on-existing --output " & ChrW(34) & tracklocation & ChrW(34)
+
+                Dim process As New Process()
+                process.StartInfo.FileName = processPath
+                process.StartInfo.Arguments = processArguments
+                process.StartInfo.UseShellExecute = False
+                process.StartInfo.RedirectStandardOutput = True
+                process.StartInfo.RedirectStandardError = True
+                process.StartInfo.CreateNoWindow = True
+
+                process.Start()
+                Dim standardOutput As String = process.StandardOutput.ReadToEnd()
+
+                Console.WriteLine(standardOutput.Trim())
+                itm.BackColor = Color.Green
+                ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
+                process.WaitForExit()
+            Catch ex As Exception
+                itm.BackColor = Color.Red
+            End Try
+        Catch ex As Exception
+
+        End Try
+    End Sub
+    Private Sub WriteTagsMenuItem_Click(sender As Object, e As EventArgs)
+        Try
+            Dim itm As ListViewItem = ListView1.SelectedItems.Item(0)
+            Try
+                Dim artist As String = itm.Text
+                Dim album As String = itm.SubItems.Item(1).Text
+                Dim track As String = itm.SubItems.Item(2).Text
+                Dim id As String = itm.SubItems.Item(3).Text
+                Dim youtubelink As String = itm.SubItems.Item(4).Text
+                Dim tracklocation As String = itm.SubItems.Item(5).Text
+                Dim rootpath As String = My.Settings.rootpath
+                itm.BackColor = Color.Yellow
+                ToolStripStatusLabel1.Text = $"Processing: {artist} - {track}"
+                WriteID3v3Tags(tracklocation, artist, album, track)
+                ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
+                itm.BackColor = Color.Green
+            Catch ex As Exception
+                itm.BackColor = Color.Red
+            End Try
+        Catch ex As Exception
+
+        End Try
+    End Sub
+    Private Sub EditTagsMenuItem_Click(sender As Object, e As EventArgs)
+        Try
+            Dim itm As ListViewItem = ListView1.SelectedItems.Item(0)
+            Try
+                For Each itr As ListViewItem.ListViewSubItem In itm.SubItems
+                    itr.Text = InputBox("Enter Changes", "Enter Changes", itr.Text)
+                Next
+            Catch ex As Exception
+            End Try
+        Catch ex As Exception
+        End Try
+    End Sub
+    Private Sub OpenUrlMenuItem_Click(sender As Object, e As EventArgs)
+        Try
+            Dim itm As ListViewItem = ListView1.SelectedItems.Item(0)
+            Dim youtubelink As String = itm.SubItems.Item(4).Text.Trim
+            Process.Start(New ProcessStartInfo(youtubelink) With {.UseShellExecute = True})
+        Catch ex As Exception
+        End Try
+    End Sub
+    Private Sub RemoveMenuItem_Click(sender As Object, e As EventArgs)
+        Dim itm As ListViewItem = ListView1.SelectedItems.Item(0)
+        ListView1.Items.Remove(itm)
     End Sub
 End Class
 Public Class MusicBrainzHelper
