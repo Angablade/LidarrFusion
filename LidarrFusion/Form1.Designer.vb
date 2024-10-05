@@ -22,9 +22,11 @@ Partial Class Form1
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim resources As ComponentModel.ComponentResourceManager = New ComponentModel.ComponentResourceManager(GetType(Form1))
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
         StatusStrip1 = New StatusStrip()
         ToolStripStatusLabel1 = New ToolStripStatusLabel()
+        ToolStripProgressBar1 = New ToolStripProgressBar()
+        ToolStripStatusLabel2 = New ToolStripStatusLabel()
         ToolStrip1 = New ToolStrip()
         ToolStripDropDownButton1 = New ToolStripDropDownButton()
         LidarrToolStripMenuItem = New ToolStripMenuItem()
@@ -33,6 +35,10 @@ Partial Class Form1
         SetRootPathToolStripMenuItem = New ToolStripMenuItem()
         ToolStripMenuItem4 = New ToolStripSeparator()
         RequestRootPathToolStripMenuItem = New ToolStripMenuItem()
+        ToolStripMenuItem6 = New ToolStripSeparator()
+        RequestInterventionsToolStripMenuItem = New ToolStripMenuItem()
+        SkipYoutubeSearchToolStripMenuItem = New ToolStripMenuItem()
+        ToolStripMenuItem7 = New ToolStripMenuItem()
         FFmpegToolStripMenuItem = New ToolStripMenuItem()
         FfmpegexeToolStripMenuItem = New ToolStripMenuItem()
         FfprobeexeToolStripMenuItem = New ToolStripMenuItem()
@@ -73,7 +79,7 @@ Partial Class Form1
         ' 
         ' StatusStrip1
         ' 
-        StatusStrip1.Items.AddRange(New ToolStripItem() {ToolStripStatusLabel1})
+        StatusStrip1.Items.AddRange(New ToolStripItem() {ToolStripStatusLabel1, ToolStripProgressBar1, ToolStripStatusLabel2})
         StatusStrip1.Location = New Point(0, 580)
         StatusStrip1.Name = "StatusStrip1"
         StatusStrip1.Size = New Size(1212, 22)
@@ -82,10 +88,21 @@ Partial Class Form1
         ' 
         ' ToolStripStatusLabel1
         ' 
-        ToolStripStatusLabel1.Font = New Font("Segoe UI", 6F, FontStyle.Regular, GraphicsUnit.Point)
+        ToolStripStatusLabel1.Font = New Font("Segoe UI", 6.0F, FontStyle.Regular, GraphicsUnit.Point)
         ToolStripStatusLabel1.Name = "ToolStripStatusLabel1"
         ToolStripStatusLabel1.Size = New Size(0, 17)
         ToolStripStatusLabel1.TextAlign = ContentAlignment.MiddleRight
+        ' 
+        ' ToolStripProgressBar1
+        ' 
+        ToolStripProgressBar1.Name = "ToolStripProgressBar1"
+        ToolStripProgressBar1.Size = New Size(400, 16)
+        ' 
+        ' ToolStripStatusLabel2
+        ' 
+        ToolStripStatusLabel2.Name = "ToolStripStatusLabel2"
+        ToolStripStatusLabel2.Size = New Size(25, 17)
+        ToolStripStatusLabel2.Text = "      "
         ' 
         ' ToolStrip1
         ' 
@@ -110,7 +127,7 @@ Partial Class Form1
         ' 
         ' LidarrToolStripMenuItem
         ' 
-        LidarrToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {SetURLToolStripMenuItem, SetAPIKeyToolStripMenuItem, SetRootPathToolStripMenuItem, ToolStripMenuItem4, RequestRootPathToolStripMenuItem})
+        LidarrToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {SetURLToolStripMenuItem, SetAPIKeyToolStripMenuItem, SetRootPathToolStripMenuItem, ToolStripMenuItem4, RequestRootPathToolStripMenuItem, ToolStripMenuItem6, RequestInterventionsToolStripMenuItem, SkipYoutubeSearchToolStripMenuItem, ToolStripMenuItem7})
         LidarrToolStripMenuItem.Image = My.Resources.Resources._28475832
         LidarrToolStripMenuItem.Name = "LidarrToolStripMenuItem"
         LidarrToolStripMenuItem.Size = New Size(180, 22)
@@ -120,34 +137,62 @@ Partial Class Form1
         ' 
         SetURLToolStripMenuItem.Image = My.Resources.Resources._5220478
         SetURLToolStripMenuItem.Name = "SetURLToolStripMenuItem"
-        SetURLToolStripMenuItem.Size = New Size(171, 22)
+        SetURLToolStripMenuItem.Size = New Size(188, 22)
         SetURLToolStripMenuItem.Text = "Set URL"
         ' 
         ' SetAPIKeyToolStripMenuItem
         ' 
         SetAPIKeyToolStripMenuItem.Image = My.Resources.Resources._4524213
         SetAPIKeyToolStripMenuItem.Name = "SetAPIKeyToolStripMenuItem"
-        SetAPIKeyToolStripMenuItem.Size = New Size(171, 22)
+        SetAPIKeyToolStripMenuItem.Size = New Size(188, 22)
         SetAPIKeyToolStripMenuItem.Text = "Set API Key"
         ' 
         ' SetRootPathToolStripMenuItem
         ' 
         SetRootPathToolStripMenuItem.Image = My.Resources.Resources._1017443
         SetRootPathToolStripMenuItem.Name = "SetRootPathToolStripMenuItem"
-        SetRootPathToolStripMenuItem.Size = New Size(171, 22)
+        SetRootPathToolStripMenuItem.Size = New Size(188, 22)
         SetRootPathToolStripMenuItem.Text = "Set Root Path"
         ' 
         ' ToolStripMenuItem4
         ' 
         ToolStripMenuItem4.Name = "ToolStripMenuItem4"
-        ToolStripMenuItem4.Size = New Size(168, 6)
+        ToolStripMenuItem4.Size = New Size(185, 6)
         ' 
         ' RequestRootPathToolStripMenuItem
         ' 
         RequestRootPathToolStripMenuItem.Image = My.Resources.Resources._5201246
         RequestRootPathToolStripMenuItem.Name = "RequestRootPathToolStripMenuItem"
-        RequestRootPathToolStripMenuItem.Size = New Size(171, 22)
+        RequestRootPathToolStripMenuItem.Size = New Size(188, 22)
         RequestRootPathToolStripMenuItem.Text = "Request Root Path"
+        ' 
+        ' ToolStripMenuItem6
+        ' 
+        ToolStripMenuItem6.Name = "ToolStripMenuItem6"
+        ToolStripMenuItem6.Size = New Size(185, 6)
+        ' 
+        ' RequestInterventionsToolStripMenuItem
+        ' 
+        RequestInterventionsToolStripMenuItem.Image = My.Resources.Resources._6964535
+        RequestInterventionsToolStripMenuItem.Name = "RequestInterventionsToolStripMenuItem"
+        RequestInterventionsToolStripMenuItem.Size = New Size(188, 22)
+        RequestInterventionsToolStripMenuItem.Text = "Request Interventions"
+        ' 
+        ' SkipYoutubeSearchToolStripMenuItem
+        ' 
+        SkipYoutubeSearchToolStripMenuItem.Image = My.Resources.Resources.apps_34457_c58fe368_245c_4d6e_8641_5cd73f20d53a_9afb1f90_821b_4126_be41_fe654469edff
+        SkipYoutubeSearchToolStripMenuItem.ImageTransparentColor = Color.Red
+        SkipYoutubeSearchToolStripMenuItem.Name = "SkipYoutubeSearchToolStripMenuItem"
+        SkipYoutubeSearchToolStripMenuItem.Size = New Size(188, 22)
+        SkipYoutubeSearchToolStripMenuItem.Text = "Skip Youtube Search"
+        ' 
+        ' ToolStripMenuItem7
+        ' 
+        ToolStripMenuItem7.Image = My.Resources.Resources._59197895_bb937500_8b92_11e9_8ea7_2ac48292b781
+        ToolStripMenuItem7.ImageTransparentColor = Color.Red
+        ToolStripMenuItem7.Name = "ToolStripMenuItem7"
+        ToolStripMenuItem7.Size = New Size(188, 22)
+        ToolStripMenuItem7.Text = "Use Youtube Music"
         ' 
         ' FFmpegToolStripMenuItem
         ' 
@@ -207,7 +252,6 @@ Partial Class Form1
         ' 
         ' SkipExistingFilesToolStripMenuItem
         ' 
-        SkipExistingFilesToolStripMenuItem.CheckOnClick = True
         SkipExistingFilesToolStripMenuItem.Image = My.Resources.Resources.apps_55042_2333d5c4_cd0f_45a1_bdb7_57a4b30a8cf9_4a0eb3da_0ea9_4903_acc8_5ba38654775e
         SkipExistingFilesToolStripMenuItem.Name = "SkipExistingFilesToolStripMenuItem"
         SkipExistingFilesToolStripMenuItem.Size = New Size(176, 22)
@@ -372,7 +416,7 @@ Partial Class Form1
         ' 
         ' Form1
         ' 
-        AutoScaleDimensions = New SizeF(7F, 15F)
+        AutoScaleDimensions = New SizeF(7.0F, 15.0F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1212, 602)
         Controls.Add(ListView1)
@@ -433,4 +477,10 @@ Partial Class Form1
     Friend WithEvents ToolStripTextBox1 As ToolStripTextBox
     Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
     Friend WithEvents AboutToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ToolStripProgressBar1 As ToolStripProgressBar
+    Friend WithEvents ToolStripStatusLabel2 As ToolStripStatusLabel
+    Friend WithEvents ToolStripMenuItem6 As ToolStripSeparator
+    Friend WithEvents RequestInterventionsToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents SkipYoutubeSearchToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ToolStripMenuItem7 As ToolStripMenuItem
 End Class

@@ -9,6 +9,7 @@ Imports Newtonsoft.Json.Linq
 Imports TagLib
 Imports System.Windows.Forms.VisualStyles
 Imports System.ComponentModel
+Imports System.Collections.Concurrent
 
 Public Class Form1
     Private WithEvents webClient As New WebClient()
@@ -24,9 +25,12 @@ Public Class Form1
         End If
         CheckForIllegalCrossThreadCalls = False
         SkipExistingFilesToolStripMenuItem.Checked = My.Settings.skipexist
+        RequestInterventionsToolStripMenuItem.Checked = My.Settings.intervent
+        SkipYoutubeSearchToolStripMenuItem.Checked = My.Settings.skipyoutube
+        ToolStripMenuItem7.Checked = My.Settings.youtubemusic
 
         Dim icon2 As New PictureBox()
-        AddHandler icon2.Click, AddressOf ToolStripTextBox1_click
+        AddHandler icon2.Click, AddressOf ToolStripTextBox1_Click
         icon2.Image = My.Resources.search_icon_sign_symbol_design_free_png
         icon2.SizeMode = PictureBoxSizeMode.StretchImage
         icon2.Dock = DockStyle.Right
@@ -105,19 +109,19 @@ Public Class Form1
     End Sub
 
     Private Sub SetURLToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SetURLToolStripMenuItem.Click
-        Dim userInput As String = InputBox("Enter a URL:", "URL Input")
+        Dim userInput As String = InputBox("Enter a URL:", "URL Input", My.Settings.LidarrAPIURL)
         My.Settings.LidarrAPIURL = userInput
         My.Settings.Save()
     End Sub
 
     Private Sub SetAPIKeyToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SetAPIKeyToolStripMenuItem.Click
-        Dim userInput As String = InputBox("Enter API key:", "API Key")
+        Dim userInput As String = InputBox("Enter API key:", "API Key", My.Settings.LidarrAPIKey)
         My.Settings.LidarrAPIKey = userInput
         My.Settings.Save()
     End Sub
 
     Private Sub SetRootPathToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SetRootPathToolStripMenuItem.Click
-        Dim userInput As String = InputBox("Enter a path:", "Root Path")
+        Dim userInput As String = InputBox("Enter a path:", "Root Path", My.Settings.rootpath)
         My.Settings.rootpath = userInput
         My.Settings.Save()
     End Sub
@@ -299,26 +303,59 @@ Public Class Form1
     End Function
     Private Sub BackgroundWorker1_DoWork(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundWorker1.DoWork
         Try
+
             ListView1.Items.Clear()
             Dim Url As String = My.Settings.LidarrAPIURL & "/api/v1/wanted/missing?pageSize=1000000000&includeArtist=true&monitored=true"
             webClient.Headers.Add("X-Api-Key", My.Settings.LidarrAPIKey)
             Dim response As String = webClient.DownloadString(Url)
             Dim data As JObject = Newtonsoft.Json.JsonConvert.DeserializeObject(response)
             If data("records") IsNot Nothing Then
+                ToolStripProgressBar1.Value = 0
+                ToolStripProgressBar1.Maximum = data("records").Count
                 For Each record As JObject In data("records")
                     Try
                         Dim artist As String = If(record("artist")("artistName") IsNot Nothing, record("artist")("artistName").ToString(), "")
                         Dim album As String = If(record("title") IsNot Nothing, record("title").ToString(), "")
-                        Dim id As String = If(record("id") IsNot Nothing, record("id").ToString(), "")
+                        Dim id As String = If(record("id") IsNot Nothing, record("id").ToString(), "") '
 
                         Dim tracks As String() = Nothing
                         tracks = MusicBrainzHelper.GetTrackList(artist, album)
-
                         If tracks IsNot Nothing AndAlso tracks.Length > 0 Then
+                            'MsgBox(ToolStripProgressBar1.Maximum.ToString())
                             For Each track In tracks
+
                                 Try
-                                    Dim ytlink As String = YouTubeHelper.SearchYoutube($"{artist} - {album} - {track}{My.Settings.ytpp}")
-                                    Dim tracklocation As String = Path.Combine(My.Settings.rootpath, SanitizePath(artist), SanitizePath(album), SanitizePath(track) & ".mp3")
+                                    ToolStripProgressBar1.Value += 1
+                                    ToolStripStatusLabel2.Text = $"{ ToolStripProgressBar1.Maximum}/{ ToolStripProgressBar1.Value}"
+                                    Dim lnkcntr As Integer = 0
+                                    Dim ytlink As String = ""
+                                    Dim redoer As Boolean = False
+
+                                    If My.Settings.skipyoutube = False Then
+reyoutube:
+                                        If ToolStripMenuItem7.Checked = False Then
+                                            ytlink = YouTubeHelper.SearchYoutube($"{artist} - {album} - {track}{My.Settings.ytpp}", lnkcntr)
+                                        Else
+                                            ytlink = YouTubeHelper.SearchYoutubeMusic($"{artist} - {album} - {track}{My.Settings.ytpp}", lnkcntr)
+                                        End If
+
+                                        Parallel.ForEach(ListView1.Items.Cast(Of ListViewItem)(), Sub(item)
+
+                                                                                                      If item.SubItems(4).Text = ytlink Or ytlink = "https://www.youtube.com/watch?v=" Or ytlink = "https://music.youtube.com/watch?v=" Then
+                                                                                                          If ytlink.Length > 0 Then
+                                                                                                              System.Diagnostics.Debug.WriteLine($"Error: Can't find video. Retrying -> {ytlink}")
+                                                                                                              redoer = True
+                                                                                                          End If
+                                                                                                      End If
+                                                                                                  End Sub)
+
+                                            If redoer = True Then
+                                                redoer = False
+                                                lnkcntr += 1
+                                                GoTo reyoutube
+                                            End If
+                                        End If
+                                        Dim tracklocation As String = Path.Combine(My.Settings.rootpath, SanitizePath(artist), SanitizePath(album), SanitizePath(track) & ".mp3")
                                     Dim q As New ListViewItem()
                                     q.Text = artist
                                     q.SubItems.Add(album)
@@ -334,6 +371,7 @@ Public Class Form1
                         System.Threading.Thread.Sleep(1500)
                     Catch ex As Exception
                     End Try
+
                     If cancelbgw1 = True Then Exit For
                 Next
             Else
@@ -341,10 +379,12 @@ Public Class Form1
             End If
         Catch ex As Exception
         End Try
-
+        ToolStripStatusLabel2.Text = "   "
+        ToolStripProgressBar1.Value = 0
         ToolStripButton1.Enabled = True
         ToolStripButton2.Enabled = True
         ToolStripButton3.Enabled = True
+
     End Sub
 
     Private Sub ToolStripButton2_Click(sender As Object, e As EventArgs) Handles ToolStripButton2.Click
@@ -395,11 +435,12 @@ Public Class Form1
                     process.StartInfo.RedirectStandardOutput = True
                     process.StartInfo.RedirectStandardError = True
 
+
                     process.Start()
                     Dim standardOutput As String = process.StandardOutput.ReadToEnd()
 
                     Console.WriteLine(standardOutput.Trim())
-                    itm.BackColor = Color.Green
+                    itm.BackColor = Color.LimeGreen
                     ToolStripStatusLabel1.Text = $"Processed: {artist} - {track}"
                     process.WaitForExit()
                 Catch ex As Exception
@@ -575,6 +616,7 @@ Public Class Form1
     End Sub
 
     Private Sub SkipExistingFilesToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SkipExistingFilesToolStripMenuItem.Click
+        SkipExistingFilesToolStripMenuItem.Checked = Not SkipExistingFilesToolStripMenuItem.Checked
         My.Settings.skipexist = SkipExistingFilesToolStripMenuItem.Checked
         My.Settings.Save()
     End Sub
@@ -678,6 +720,24 @@ Public Class Form1
         Dim itm As ListViewItem = ListView1.SelectedItems.Item(0)
         ListView1.Items.Remove(itm)
     End Sub
+
+    Private Sub RequestInterventionsToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles RequestInterventionsToolStripMenuItem.Click
+        RequestInterventionsToolStripMenuItem.Checked = Not RequestInterventionsToolStripMenuItem.Checked
+        My.Settings.intervent = RequestInterventionsToolStripMenuItem.Checked
+        My.Settings.Save()
+    End Sub
+
+    Private Sub SkipYoutubeSearchToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SkipYoutubeSearchToolStripMenuItem.Click
+        SkipYoutubeSearchToolStripMenuItem.Checked = Not SkipYoutubeSearchToolStripMenuItem.Checked
+        My.Settings.skipyoutube = SkipYoutubeSearchToolStripMenuItem.Checked
+        My.Settings.Save()
+    End Sub
+
+    Private Sub ToolStripMenuItem7_Click(sender As Object, e As EventArgs) Handles ToolStripMenuItem7.Click
+        ToolStripMenuItem7.Checked = Not ToolStripMenuItem7.Checked
+        My.Settings.youtubemusic = ToolStripMenuItem7.Checked
+        My.Settings.Save()
+    End Sub
 End Class
 Public Class MusicBrainzHelper
     Public Shared Function GetTrackList(artist As String, album As String) As String()
@@ -715,13 +775,15 @@ Public Class MusicBrainzHelper
 
                                         If Not String.IsNullOrEmpty(tracklistJsonResponse) Then
                                             Dim tracklistData As JObject = Newtonsoft.Json.JsonConvert.DeserializeObject(tracklistJsonResponse)
-
-                                            If tracklistData.Item("media")(0)("tracks") IsNot Nothing Or tracklistData.Item("media")(0)("tracks").ToString.Length > 0 Then
-                                                Dim tracks As JArray = CType(tracklistData("media")(0)("tracks"), JArray)
-                                                Return tracks.Select(Function(t) CStr(t.Item("title"))).ToArray()
-                                            Else
-                                                Return Nothing
-                                            End If
+                                            Try
+                                                If tracklistData.Item("media")(0)("tracks") IsNot Nothing Or tracklistData.Item("media")(0)("tracks").ToString.Length > 0 Then
+                                                    Dim tracks As JArray = CType(tracklistData("media")(0)("tracks"), JArray)
+                                                    Return tracks.Select(Function(t) CStr(t.Item("title"))).ToArray()
+                                                Else
+                                                    Return Nothing
+                                                End If
+                                            Catch ex As Exception
+                                            End Try
                                         End If
                                     End Using
                                 End Using
@@ -737,19 +799,36 @@ Public Class MusicBrainzHelper
     End Function
 End Class
 Public Class YouTubeHelper
-    Public Shared Function SearchYoutube(query As String) As String
+    Public Shared Function SearchYoutube(query As String, Optional hotindex As Integer = 0) As String
         Dim queryEncoded As String = WebUtility.UrlEncode(query)
         Dim url As String = "https://www.youtube.com/results?search_query=" & queryEncoded
+        System.Diagnostics.Debug.WriteLine($"Current Hot index: {hotindex.ToString()}")
+
+        If hotindex >= 4 Then
+            If My.Settings.intervent = True Then
+                Dim NewProcess As Diagnostics.ProcessStartInfo = New Diagnostics.ProcessStartInfo(url)
+                NewProcess.UseShellExecute = True
+                Diagnostics.Process.Start(NewProcess)
+                Dim x As String = InputBox($"There was an error finding '{query}', please enter the url directly please!", "Please enter the url Directly!")
+                Return x
+            Else
+                Return ""
+            End If
+        End If
 
         Using client As New WebClient()
             Try
+                ' Set the user-agent to the latest Firefox version
+                client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:117.0) Gecko/20100101 Firefox/117.0")
+
                 Dim response As String = client.DownloadString(url)
 
                 If response IsNot Nothing Then
                     Dim matches As Match = Regex.Match(response, """videoRenderer""\s*:\s*{""videoId""\s*:\s*""([^""]+)""")
 
                     If matches.Success Then
-                        Dim videoId As String = matches.Groups(1).Value
+                        System.Diagnostics.Debug.WriteLine($"Matches: {matches.Groups.Count}")
+                        Dim videoId As String = matches.Groups(1 + hotindex).Value
                         Dim videoUrl As String = "https://www.youtube.com/watch?v=" & videoId
                         System.Diagnostics.Debug.WriteLine("Video link found: " & videoUrl)
                         Return videoUrl
@@ -765,4 +844,56 @@ Public Class YouTubeHelper
             End Try
         End Using
     End Function
+
+    Public Shared Function SearchYoutubeMusic(query As String, Optional hotindex As Integer = 0) As String
+        Dim queryEncoded As String = WebUtility.UrlEncode(query)
+        Dim url As String = "https://music.youtube.com/search?q=" & queryEncoded
+        System.Diagnostics.Debug.WriteLine($"Current Hot index: {hotindex.ToString()}")
+
+        If hotindex >= 4 Then
+            If My.Settings.intervent = True Then
+                Dim NewProcess As Diagnostics.ProcessStartInfo = New Diagnostics.ProcessStartInfo(url)
+                NewProcess.UseShellExecute = True
+                Diagnostics.Process.Start(NewProcess)
+                Dim x As String = InputBox($"There was an error finding '{query}', please enter the URL directly!", "Please enter the URL directly!")
+                Return x
+            Else
+                Return ""
+            End If
+        End If
+
+        Using client As New WebClient()
+            Try
+                ' Set the user-agent to the latest Firefox version
+                client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:117.0) Gecko/20100101 Firefox/117.0")
+
+                ' Fetch response with better escaping for JSON characters
+                Dim response As String = client.DownloadString(url).Replace("\x22", Chr(34)).Replace("\x7b", "{").Replace("\x7d", "}").Replace("\x5b", "[").Replace("\x5d", "]")
+
+                MsgBox(response)
+
+                ' Capture video/track IDs from YouTube Music
+                If response IsNot Nothing Then
+                    Dim matches As Match = Regex.Match(response, """videoId""\s*:\s*""([^""]+)""")
+
+                    If matches.Success Then
+                        System.Diagnostics.Debug.WriteLine($"Matches: {matches.Groups.Count}")
+                        Dim videoId As String = matches.Groups(1 + hotindex).Value
+                        Dim videoUrl As String = "https://music.youtube.com/watch?v=" & videoId
+                        System.Diagnostics.Debug.WriteLine("Music video link found: " & videoUrl)
+                        Return videoUrl
+                    Else
+                        Return "Music video link not found in the search results."
+                    End If
+                Else
+                    Return "Error fetching YouTube Music search results."
+                End If
+
+            Catch ex As WebException
+                Return "Error fetching YouTube Music search results: " & ex.Message
+            End Try
+        End Using
+    End Function
+
 End Class
+
